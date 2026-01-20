@@ -143,26 +143,71 @@
 <div class="container mt-4">
     <!-- Main Card containing everything -->
     <div class="card main-card" style="margin-top: -30px;">
-        <!-- Card Header with Title and Add Button -->
-        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
+       <!-- Card Header with Title and Add Button -->
+<div class="card-header card-header-custom">
+    <div class="row align-items-center">
+        <!-- Title on Left -->
+        <div class="col-12 col-md-8 mb-3 mb-md-0">
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start">
                 <i class="bi bi-shield-check text-white fs-3 me-3"></i>
                 <h4 class="mb-0 text-white">Roles & Permissions Management</h4>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                {{-- <div class="export-buttons">
-                    <button id="exportExcel" class="btn btn-success btn-export me-2">
-                        <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
-                    </button>
-                    <button id="exportPDF" class="btn btn-danger btn-export me-3">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
-                    </button>
-                </div> --}}
-                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addRoleModal" style="margin-left: 18rem;">
-                    <i class="bi bi-plus-circle me-2"></i>Add New Role
+        </div>
+
+        <!-- Button on Right -->
+        <div class="col-12 col-md-4">
+            <div class="d-flex justify-content-center justify-content-md-end">
+                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+                    <i class="bi bi-plus-circle me-1 me-md-2"></i>
+                    <span class="d-none d-sm-inline">Add New Role</span>
+                    <span class="d-inline d-sm-none">Add Role</span>
                 </button>
             </div>
         </div>
+    </div>
+</div>
+
+<style>
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .card-header-custom {
+            padding: 1rem !important;
+        }
+
+        .card-header-custom h4 {
+            font-size: 1.25rem;
+        }
+
+        .btn-light {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .btn i {
+            margin-right: 0.25rem !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .card-header-custom .col-md-8,
+        .card-header-custom .col-md-4 {
+            text-align: center;
+        }
+
+        .d-flex.justify-content-center {
+            width: 100%;
+        }
+
+        .btn-light {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .card-header-custom h4 {
+            font-size: 1.1rem;
+        }
+    }
+</style>
 
         <!-- Card Body with Filter Section -->
         <div class="card-body">
@@ -291,9 +336,9 @@
 </div>
 
 <!-- Add Role Modal -->
-<div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true" style="margin-top: 75px; margin-left: 160px;">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="width: 520px;">
+<div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
             <form action="{{ route('role.store') }}" method="POST">
                 @csrf
                 <div class="modal-header modal-header-gradient text-white">
@@ -302,14 +347,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-12 mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label fw-semibold">Role Name *</label>
                             <input type="text" name="name" class="form-control filter-input" placeholder="e.g., Admin, Editor, Viewer" required>
                             <small class="text-muted">Use descriptive names for roles (e.g., "Content Manager", "Sales Executive")</small>
                         </div>
-                        <div class="col-md-12 mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label fw-semibold">Description (Optional)</label>
-                            <textarea name="description" class="form-control filter-input" rows="2" placeholder="Brief description of this role..."></textarea>
+                            <textarea name="description" class="form-control filter-input" rows="3" placeholder="Brief description of this role..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -325,9 +370,9 @@
 </div>
 
 <!-- Edit Role Modal -->
-<div class="modal fade" id="editRoleModal" tabindex="-1" aria-hidden="true" style="margin-top: 75px; margin-left: 160px;">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="width: 520px;">
+<div class="modal fade" id="editRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
             <form id="editRoleForm" method="POST">
                 @csrf
                 @method('PUT')
@@ -337,13 +382,13 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-12 mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label fw-semibold">Role Name *</label>
                             <input type="text" name="name" id="editRoleName" class="form-control filter-input" required>
                         </div>
-                        <div class="col-md-12 mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label fw-semibold">Description (Optional)</label>
-                            <textarea name="description" id="editRoleDescription" class="form-control filter-input" rows="2"></textarea>
+                            <textarea name="description" id="editRoleDescription" class="form-control filter-input" rows="3"></textarea>
                         </div>
                     </div>
                 </div>
@@ -357,6 +402,120 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Make modals responsive */
+    .modal-content {
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    /* Responsive modal adjustments */
+    @media (max-width: 992px) {
+        .modal-dialog.modal-lg {
+            max-width: 90%;
+            margin: 30px auto;
+        }
+
+        .modal-content {
+            max-width: 100%;
+        }
+
+        .modal-header, .modal-body, .modal-footer {
+            padding: 1rem !important;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+        }
+
+        textarea {
+            min-height: 80px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .modal-dialog.modal-lg {
+            max-width: 95%;
+            margin: 20px auto;
+        }
+
+        .modal-dialog-centered {
+            align-items: flex-start;
+            min-height: calc(100% - 40px);
+        }
+
+        .modal-content {
+            border-radius: 8px;
+        }
+
+        .modal-body {
+            padding: 0.75rem !important;
+        }
+
+        .btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-control {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        small.text-muted {
+            font-size: 0.8rem;
+        }
+
+        textarea {
+            min-height: 70px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .modal-title {
+            font-size: 1rem;
+        }
+
+        .btn-success i, .btn-secondary i {
+            margin-right: 0.25rem !important;
+        }
+
+        textarea {
+            min-height: 60px;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .modal-footer {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-control {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        textarea {
+            min-height: 50px;
+        }
+
+        small.text-muted {
+            font-size: 0.75rem;
+        }
+    }
+</style>
 @endsection
 
 @section('scripts')

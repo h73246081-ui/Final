@@ -143,25 +143,70 @@
     <!-- Main Card containing everything -->
     <div class="card main-card" style="margin-top: -30px;">
         <!-- Card Header with Title and Add Button -->
-        <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-shield-lock text-white fs-3 me-3"></i>
-                <h4 class="mb-0 text-white">Permissions Management</h4>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                {{-- <div class="export-buttons">
-                    <button id="exportExcel" class="btn btn-success btn-export me-2">
-                        <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
-                    </button>
-                    <button id="exportPDF" class="btn btn-danger btn-export me-3">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Export PDF
-                    </button>
-                </div> --}}
-                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addPermissionModal" style="margin-left: 21rem;">
-                    <i class="bi bi-plus-circle me-2"></i>Add New Permission
-                </button>
+        <div class="card-header card-header-custom">
+            <div class="row align-items-center">
+                <!-- Title on Left -->
+                <div class="col-12 col-md-8 mb-3 mb-md-0">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                        <i class="bi bi-shield-lock text-white fs-3 me-3"></i>
+                        <h4 class="mb-0 text-white">Permissions Management</h4>
+                    </div>
+                </div>
+
+                <!-- Button on Right -->
+                <div class="col-12 col-md-4">
+                    <div class="d-flex justify-content-center justify-content-md-end">
+                        <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addPermissionModal">
+                            <i class="bi bi-plus-circle me-1 me-md-2"></i>
+                            <span class="d-none d-sm-inline">Add New Permission</span>
+                            <span class="d-inline d-sm-none">Add Permission</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <style>
+            /* Responsive styles */
+            @media (max-width: 768px) {
+                .card-header-custom {
+                    padding: 1rem !important;
+                }
+
+                .card-header-custom h4 {
+                    font-size: 1.25rem;
+                }
+
+                .btn-light {
+                    padding: 0.375rem 0.75rem;
+                    font-size: 0.875rem;
+                }
+
+                .btn i {
+                    margin-right: 0.25rem !important;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .card-header-custom .col-md-8,
+                .card-header-custom .col-md-4 {
+                    text-align: center;
+                }
+
+                .d-flex.justify-content-center {
+                    width: 100%;
+                }
+
+                .btn-light {
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                .card-header-custom h4 {
+                    font-size: 1.1rem;
+                }
+            }
+        </style>
 
         <!-- Card Body with Filter Section -->
         <div class="card-body">
@@ -308,9 +353,9 @@
 </div>
 
 <!-- Add Permission Modal -->
-<div class="modal fade" id="addPermissionModal" tabindex="-1" aria-hidden="true" style="margin-top: 75px; margin-left: 160px;">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="width: 520px;">
+<div class="modal fade" id="addPermissionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
             <form action="{{ route('storePermission') }}" method="POST">
                 @csrf
                 <div class="modal-header modal-header-gradient text-white">
@@ -319,13 +364,13 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-12 mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label fw-semibold">Permission Name *</label>
                             <input type="text" name="name" class="form-control filter-input"
                                    placeholder="e.g., users.create, products.view, orders.delete" required>
                             <small class="text-muted">Use dot notation: model.action (e.g., "products.create", "users.delete")</small>
                         </div>
-                        <div class="col-md-12 mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label fw-semibold">Permission Type</label>
                             <select class="form-control filter-input" id="permissionTypeSelect">
                                 <option value="">Select a type to auto-generate...</option>
@@ -337,8 +382,8 @@
                                 <option value="reports">Reports Management</option>
                             </select>
                         </div>
-                        <div class="col-md-12">
-                            <div class="alert alert-info">
+                        <div class="col-12">
+                            <div class="alert alert-info p-2 p-md-3">
                                 <i class="bi bi-info-circle me-2"></i>
                                 <small>Common permission actions: create, read, update, delete, view, manage, export, import</small>
                             </div>
@@ -357,9 +402,9 @@
 </div>
 
 <!-- Edit Permission Modal -->
-<div class="modal fade" id="editPermissionModal" tabindex="-1" aria-hidden="true" style="margin-top: 75px; margin-left: 160px;">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="width: 520px;">
+<div class="modal fade" id="editPermissionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
             <form id="editPermissionForm" method="POST">
                 @csrf
                 @method('PUT')
@@ -369,13 +414,13 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-12 mb-3">
+                        <div class="col-12 mb-3">
                             <label class="form-label fw-semibold">Permission Name *</label>
                             <input type="text" name="name" id="editPermissionName" class="form-control filter-input" required>
                             <small class="text-muted">Current format: <span id="currentFormat"></span></small>
                         </div>
-                        <div class="col-md-12">
-                            <div class="alert alert-warning">
+                        <div class="col-12">
+                            <div class="alert alert-warning p-2 p-md-3">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
                                 <small>Changing permission names may affect existing role assignments. Use caution.</small>
                             </div>
@@ -392,6 +437,133 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Make modals responsive */
+    .modal-content {
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    /* Responsive modal adjustments */
+    @media (max-width: 992px) {
+        .modal-dialog.modal-lg {
+            max-width: 90%;
+            margin: 30px auto;
+        }
+
+        .modal-content {
+            max-width: 100%;
+        }
+
+        .modal-header, .modal-body, .modal-footer {
+            padding: 1rem !important;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+        }
+
+        .alert-info, .alert-warning {
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .modal-dialog.modal-lg {
+            max-width: 95%;
+            margin: 20px auto;
+        }
+
+        .modal-dialog-centered {
+            align-items: flex-start;
+            min-height: calc(100% - 40px);
+        }
+
+        .modal-content {
+            border-radius: 8px;
+        }
+
+        .modal-body {
+            padding: 0.75rem !important;
+        }
+
+        .btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-control {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        small.text-muted {
+            font-size: 0.8rem;
+        }
+
+        .alert-info, .alert-warning {
+            font-size: 0.85rem;
+            padding: 0.5rem !important;
+        }
+
+        select {
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .modal-title {
+            font-size: 1rem;
+        }
+
+        .btn-success i, .btn-secondary i {
+            margin-right: 0.25rem !important;
+        }
+
+        .alert-info small, .alert-warning small {
+            font-size: 0.8rem;
+        }
+
+        select {
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .modal-footer {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .modal-footer .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-control {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        select {
+            font-size: 0.8rem;
+        }
+
+        small.text-muted {
+            font-size: 0.75rem;
+        }
+
+        .alert-info small, .alert-warning small {
+            font-size: 0.75rem;
+        }
+    }
+</style>
 @endsection
 
 @section('scripts')

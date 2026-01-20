@@ -76,7 +76,7 @@
                                    required
                                    autocomplete="email"
                                    autofocus
-                                   placeholder="Enter your email" style="width: 90%;">
+                                   placeholder="Enter your email" >
                         </div>
                         @error('email')
                             <div class="error-message">
@@ -99,7 +99,7 @@
                                        name="password"
                                        required
                                        autocomplete="current-password"
-                                       placeholder="Enter your password" style="width: 90%;">
+                                       placeholder="Enter your password">
                             </div>
                             <button type="button" class="password-toggle" id="togglePassword">
                                 <i class="bi bi-eye"></i>
