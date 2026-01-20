@@ -14,48 +14,82 @@
         </div>
     @endif
 
-    <form action="{{route('cms.stat.update')}}" method="POST">
+    <form action="{{ route('cms.stat.update') }}" method="POST">
         @csrf
         @method('PUT')
 
         @foreach($stats as $index => $stat)
-            <div class="card mb-3">
-                <div class="card-header">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header fw-bold">
                     Stat #{{ $index + 1 }} - {{ $stat->label }}
                 </div>
+
                 <div class="card-body">
                     <input type="hidden" name="stats[{{ $index }}][id]" value="{{ $stat->id }}">
 
-                    <div class="mb-3">
-                        <label class="form-label">Icon</label>
-                        <input type="text" class="form-control" name="stats[{{ $index }}][icon]" value="{{ $stat->icon }}">
+                    {{-- Row 1 --}}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Icon</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="stats[{{ $index }}][icon]"
+                                   value="{{ $stat->icon }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Value</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="stats[{{ $index }}][value]"
+                                   value="{{ $stat->value }}">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Value</label>
-                        <input type="text" class="form-control" name="stats[{{ $index }}][value]" value="{{ $stat->value }}">
+                    {{-- Row 2 --}}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Suffix</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="stats[{{ $index }}][suffix]"
+                                   value="{{ $stat->suffix }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Label</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="stats[{{ $index }}][label]"
+                                   value="{{ $stat->label }}">
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Suffix</label>
-                        <input type="text" class="form-control" name="stats[{{ $index }}][suffix]" value="{{ $stat->suffix }}">
+                    {{-- Row 3 --}}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Color</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="stats[{{ $index }}][color]"
+                                   value="{{ $stat->color }}">
+                            <small class="text-muted">
+                                Tailwind gradient like: from-blue-500 to-indigo-500
+                            </small>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Label</label>
-                        <input type="text" class="form-control" name="stats[{{ $index }}][label]" value="{{ $stat->label }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Color</label>
-                        <input type="text" class="form-control" name="stats[{{ $index }}][color]" value="{{ $stat->color }}">
-                        <small class="text-muted">Tailwind gradient like: from-blue-500 to-indigo-500</small>
-                    </div>
                 </div>
             </div>
         @endforeach
 
-        <button type="submit" class="btn btn-success">Update All Stats</button>
+        {{-- Submit Button --}}
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-success px-4">
+                Update All Stats
+            </button>
+        </div>
+
     </form>
 </div>
 @endsection

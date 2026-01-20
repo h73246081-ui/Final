@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
+<div class="container mt-2">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow">
@@ -24,13 +24,13 @@
                         {{-- Mission Description --}}
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <textarea name="description" rows="4" class="form-control">{{ old('description', $mission->description ?? '') }}</textarea>
+                            <textarea name="description" rows="4" class="form-control" style="height: 240px;">{{ old('description', $mission->description ?? '') }}</textarea>
                         </div>
 
                         {{-- Submit --}}
                         <div class="text-end">
-                            <button type="submit" class="btn btn-success">Update Mission</button>
-                            <a href="" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Update</button>
+
                         </div>
 
                     </form>

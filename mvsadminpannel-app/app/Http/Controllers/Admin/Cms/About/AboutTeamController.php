@@ -21,7 +21,7 @@ class AboutTeamController extends Controller
         public function store(Request $request)
     {
         $request->validate([
-            'initial' => 'nullable|string|max:1',
+            'initial' => 'nullable|string',
             'name' => 'required|string|max:255',
             'role' => 'required|string|max:255',
             'image' => 'nullable',
@@ -30,12 +30,15 @@ class AboutTeamController extends Controller
         $data = $request->only('initial','name','role');
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('team','public');
+            $image=$request->file('image');
+            $imageName=uniqid().'.'.$image->getClientOriginalExtension();
+            $image->move(public_path('upload/team'),$imageName);
+            $data['image'] = 'upload/team/'.$imageName;
         }
 
         AboutTeam::create($data);
 
-        return redirect()->route('cms.about.team')->with('success','Team member added');
+        return redirect()->back()->with('success','Team member added');
     }
 
     public function destroy($id)
@@ -43,10 +46,12 @@ class AboutTeamController extends Controller
     $team = AboutTeam::findOrFail($id);
 
 
-    if ($team->image && \Storage::disk('public')->exists($team->image)) {
-        \Storage::disk('public')->delete($team->image);
+    if($team->image){
+        $path=public_path($team->image);
+        if($path){
+            unlink($path);
+        }
     }
-
     $team->delete();
 
     return redirect()->route('cms.about.team')
@@ -66,13 +71,22 @@ public function edit($id){
             'initial' => 'nullable|string|max:1',
             'name' => 'required|string|max:255',
             'role' => 'required|string|max:255',
-            'image' => 'nullable|image|max:2048',
+            'image' => 'nullable|image',
         ]);
 
     $data = $request->only(['initial','name','role']);
 
     if ($request->hasFile('image')) {
-        $data['image'] = $request->file('image')->store('team', 'public');
+        if($team->image){
+            $path=public_path($team->image);
+            if($path){
+                unlink($path);
+            }
+        }
+        $image=$request->file('image');
+        $imageName=uniqid().'.'.$image->getClientOriginalExtension();
+        $image->move(public_path('upload/team'),$imageName);
+        $data['image'] = 'upload/team/'.$imageName;
     }
 
     $team->update($data);

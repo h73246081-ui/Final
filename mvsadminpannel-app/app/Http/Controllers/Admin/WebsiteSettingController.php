@@ -23,9 +23,9 @@ class WebsiteSettingController extends Controller
             'email'     => 'required|email|max:255',
             'phone'     => 'nullable|string|max:255',
             'contact'   => 'nullable|string|max:255',
-            'logo'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'address'   => 'nullable|string|max:300',
-            'direction_address' => 'nullable|string|max:300',
+            'logo'      => 'nullable|image',
+            'address'   => 'nullable|string',
+            'direction_address' => 'nullable|string',
             'direction_link' => 'nullable|string',
             'support_hours' => 'nullable|string|max:255',
             'facebook'  => 'nullable|string|max:255',
@@ -56,13 +56,16 @@ class WebsiteSettingController extends Controller
         // Handle logo upload
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
-            if ($setting->logo && Storage::disk('public')->exists($setting->logo)) {
-                Storage::disk('public')->delete($setting->logo);
+            if ($setting->logo) {
+                $path=public_path($setting->logo);
+                if($path){
+                    unlink($path);
+                }
             }
-
-            $imageName = 'logo_' . time() . '.' . $request->file('logo')->getClientOriginalExtension();
-            $request->file('logo')->storeAs('Website_logo', $imageName, 'public');
-            $setting->logo = 'logo/' . $imageName;
+            $image=$request->file('logo');
+            $imageName =uniqid().'.'.$image->getClientOriginalExtension();
+            $image->move(public_path('upload/logo'),$imageName);
+            $setting->logo = 'upload/logo/'. $imageName;
         }
 
         $setting->save();

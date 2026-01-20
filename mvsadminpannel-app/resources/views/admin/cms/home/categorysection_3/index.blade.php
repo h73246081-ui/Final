@@ -6,6 +6,54 @@
 @endsection
 
 @section('content')
+<style>
+    /* Card polish */
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .card-header {
+        border-radius: 12px 12px 0 0;
+        padding: 14px 20px;
+    }
+
+    /* Label */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+    }
+
+    /* Select2 height fix */
+    .select2-container .select2-selection--single {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+    }
+
+    .select2-selection__rendered {
+        padding-left: 12px !important;
+    }
+
+    .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    /* Focus effect */
+    .select2-container--default.select2-container--focus
+    .select2-selection--single {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.15rem rgba(13,110,253,.25);
+    }
+
+    /* Button polish */
+    .btn-success {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    </style>
 <div class="container">
     <div class="row justify-content-center">
         <!-- Centered and wider card -->
@@ -20,7 +68,7 @@
                         <div class="mb-3">
                             <label for="category" class="form-label">Select Category</label>
                             <select name="category_id" id="category" class="form-control select2" required>
-                                <option value="">-- Select Category --</option>
+                                <option value="">{{$section->name}}</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
@@ -51,7 +99,7 @@
         $(document).ready(function() {
             // Initialize Select2 on category dropdown
             $('#category').select2({
-                placeholder: "Select a category",
+                // placeholder: "Select a category",
                 allowClear: true,
                 width: '100%'
             });

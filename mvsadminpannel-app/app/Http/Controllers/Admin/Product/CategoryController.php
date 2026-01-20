@@ -19,8 +19,7 @@ class CategoryController extends Controller
         public function store(Request $request)
     {
         $request->validate([
-            'name'  => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'name'  => 'required|string|max:255'
         ]);
 
         $data = $request->only([
@@ -32,11 +31,20 @@ class CategoryController extends Controller
             'meta_keyword',
         ]);
 
-      
+
+        // if ($request->hasFile('image')) {
+        //     $data['image'] = $request->file('image')
+        //                              ->store('categories', 'public');
+        // }
+
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')
-                                     ->store('categories', 'public');
-        }
+                 $image=$request->file('image');
+                    $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+                    $image->move(public_path('upload/categories'), $imageName);
+                    $data['image']= 'upload/categories/' . $imageName;
+
+            }
+
 
         Category::create($data);
 

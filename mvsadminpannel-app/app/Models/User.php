@@ -21,7 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'phone','role_id'
+        'image',
+        'phone','role_id',
+        'password_reset_otp',
+        'otp_expires_at'
     ];
 
     /**
@@ -56,5 +59,17 @@ public function vendor()
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    public function seller(){
+        return $this->hasOne(PrivateSeller::class);
+    }
+    public function orders(){
+        return $this->hasMany(Order::class);
+    }
+    public function vendorReview(){
+        return $this->hasMany(VendorReview::class);
+    }
+    public function storeMessage(){
+        return $this->hasMany(StoreMessage::class);
     }
 }

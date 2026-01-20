@@ -8,13 +8,15 @@ use App\Models\HomeSetting;
 
 class HeroSectionController extends Controller
 {
-    //
-       // Show edit form
-    public function edit()
+
+
+
+    public function editHero()
     {
         $hero = HomeSetting::first(); // assuming only 1 row
-        return view('admin.cms.home.hero_section.edit', compact('hero'));
+        return view('admin.cms.home.heroSection.edit', compact('hero'));
     }
+
 
     // // Update hero section
     public function update(Request $request)

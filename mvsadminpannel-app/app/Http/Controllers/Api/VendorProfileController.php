@@ -10,11 +10,42 @@ use App\Models\Vendor;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str; 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class VendorProfileController extends Controller
 {
+    public function editProfile(){
+        $user=Auth::user();
+        return response()->json($user);
+    }
+    public function updateProfile(Request $request){
+        $user=Auth::user();
+        $user->name=$request->name;
+        $user->last_name=$request->last_name;
+        $user->email=$request->email;
+        $user->phone=$request->phone;
+        if($request->password){
+            $user->password=Hash::make($request->password);
+        }
+        if($request->file('image')){
+            if($user->image){
+                $path=public_path($user->image);
+                if(file_exists($path)){
+                    unlink($path);
+                }
+            }
+            $image=$request->file('image');
+            $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('upload/user'), $imageName);
+            $user->image = 'upload/user/' . $imageName;
+        }
+        $user->save();
+        return response()->json([
+            $user
+        ]);
+    }
+    //saif
     // old
     public function show()
 {

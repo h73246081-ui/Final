@@ -1396,7 +1396,7 @@ progress {
   }
   .col-lg-3 {
     flex: 0 0 auto;
-    width: 25%;
+    width: 19%;
   }
   .col-lg-4 {
     flex: 0 0 auto;
@@ -2127,10 +2127,10 @@ progress {
   appearance: none;
   background-color: var(--bs-body-bg);
   background-clip: padding-box;
-  border: var(--bs-border-width) solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius);
-  box-shadow: var(--bs-box-shadow-inset);
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  /* border: var(--bs-border-width) solid var(--bs-border-color); */
+  /* border-radius: var(--bs-border-radius);
+  box-shadow: var(--bs-box-shadow-inset); */
+  /* transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; */
 }
 @media (prefers-reduced-motion: reduce) {
   .form-control {
@@ -5573,7 +5573,7 @@ textarea.form-control-lg {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 114%;
   color: var(--bs-modal-color);
   pointer-events: auto;
   background-color: var(--bs-modal-bg);
@@ -8372,6 +8372,9 @@ textarea.form-control-lg {
 .py-4 {
   padding-top: 1.5rem !important;
   padding-bottom: 1.5rem !important;
+}
+.container-bg{
+    background-color: white;
 }
 
 .py-5 {

@@ -4,8 +4,13 @@
 <div class="container mt-4">
 
     <div class="card shadow">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-white" style="display: flex;">
             <h5 class="mb-0">Product Details: {{ $product->name }}</h5>
+
+                <a href="{{ route('product.index') }}" class="btn btn-secondary" style="margin-left: 651px;">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+
         </div>
 
         <div class="card-body">
@@ -16,9 +21,12 @@
                     <div class="card mb-3 shadow-sm">
                         <div class="card-header bg-light">
                             <strong>Product Information</strong>
+
                         </div>
                         <div class="card-body">
-                            <p><strong>Vendor:</strong> {{ $product->vendor->store_name ?? 'N/A' }}</p>
+
+                            <p><strong>Seller Store:</strong> {{ $product->vendor->vendorStore->store_name ?? 'N/A' }}</p>
+                            <p><strong>Seller Name:</strong> {{ $product->vendor->user->name ?? 'N/A' }}</p>
                             <p><strong>Category:</strong> {{ $product->category->name ?? 'N/A' }}</p>
                             <p><strong>Price:</strong> <span class="text-success">Rs {{ number_format($product->price, 2) }}</span></p>
                             <p><strong>Discount:</strong> <span class="text-warning">{{ $product->discount }}%</span></p>
@@ -73,7 +81,7 @@
                                 @endif
                             </p>
 
-                            <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                            <p><strong>Status:</strong> <span class="badge bg-success">{{$product->status}}</span></p>
                         </div>
                     </div>
                 </div>
@@ -81,18 +89,25 @@
                 <!-- Right Column -->
                 <div class="col-md-6">
 
-                    <div class="card mb-3 shadow-sm">
-                        <div class="card-header bg-light">
-                            <strong>Product Image</strong>
-                        </div>
-                        <div class="card-body text-center">
-                            @if($product->image)
-                                <img src="{{ asset($product->image) }}" class="img-fluid rounded shadow-sm mb-2" style="max-height:250px;">
-                            @else
-                                <span class="text-muted">No Image Available</span>
-                            @endif
-                        </div>
+                    <div class="card-body text-center">
+                        @php
+                            // image already array hai
+                            $images = is_array($product->image)
+                                ? $product->image
+                                : json_decode($product->image, true);
+                        @endphp
+
+                        @if(is_array($images) && count($images))
+                            @foreach($images as $img)
+                                <img src="{{ asset($img) }}"
+                                     class="img-fluid rounded shadow-sm mb-2"
+                                     style="max-height:250px;" width="60" height="60">
+                            @endforeach
+                        @else
+                            <span class="text-muted">N/A</span>
+                        @endif
                     </div>
+
 
                     <div class="card mb-3 shadow-sm">
                         <div class="card-header bg-light">
@@ -116,11 +131,7 @@
 
             </div>
 
-            <div class="mt-4">
-                <a href="{{ route('product.index') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Products
-                </a>
-            </div>
+
 
         </div>
     </div>

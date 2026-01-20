@@ -30,6 +30,6 @@ class Section2Controller extends Controller
         Section2::create(['name' => $category->name]);
     }
 
-    return redirect()->back()->with('success', 'Category saved to Section 1!');
+    return redirect()->back()->with('success', 'Category saved to Section 2!');
 }
 }

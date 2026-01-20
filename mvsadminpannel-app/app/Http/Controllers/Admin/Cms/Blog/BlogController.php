@@ -17,7 +17,7 @@ class BlogController extends Controller
     }
 
     public function index(){
-        $blogs = AddBlog::all();
+        $blogs = AddBlog::latest()->get();
         return view('admin.cms.blog.index', compact('blogs'));
     }
         public function store(Request $request)
@@ -34,12 +34,24 @@ class BlogController extends Controller
         $data = $request->only(['title','author','date','description']);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('blogs', 'public');
+            // if($testimonial->image){
+            //     $path=public_path($testimonial->image);
+            //     if($path){
+            //         unlink($path);
+            //     }
+            // }
+            $image=$request->file('image');
+            $imageName=uniqid().'.'.$image->getClientOriginalExtension();
+            $image->move(public_path('upload/blog'),$imageName);
+            $data['image'] = 'upload/blog/'.$imageName;
+        }
+        if ($request->hasFile('author_image')) {
+            $image1=$request->file('author_image');
+            $imageName1=uniqid().'.'.$image1->getClientOriginalExtension();
+            $image1->move(public_path('upload/blog'),$imageName1);
+            $data['author_image'] = 'upload/blog/'.$imageName1;
         }
 
-        if ($request->hasFile('author_image')) {
-            $data['author_image'] = $request->file('author_image')->store('authors', 'public');
-        }
 
         AddBlog::create($data);
 
@@ -65,22 +77,29 @@ class BlogController extends Controller
 
     $data = $request->only(['title','author','date','description']);
 
-    // Blog image update
     if ($request->hasFile('image')) {
-        // Optional: Delete old image
-        if ($blog->image && \Storage::disk('public')->exists($blog->image)) {
-            \Storage::disk('public')->delete($blog->image);
+        if($blog->image){
+            $path=public_path($blog->image);
+            if($path){
+                unlink($path);
+            }
         }
-        $data['image'] = $request->file('image')->store('blogs', 'public');
+        $image=$request->file('image');
+        $imageName=uniqid().'.'.$image->getClientOriginalExtension();
+        $image->move(public_path('upload/blog'),$imageName);
+        $data['image'] = 'upload/blog/'.$imageName;
     }
-
-    // Author image update
     if ($request->hasFile('author_image')) {
-        // Optional: Delete old author image
-        if ($blog->author_image && \Storage::disk('public')->exists($blog->author_image)) {
-            \Storage::disk('public')->delete($blog->author_image);
+        if($blog->author_image){
+            $path=public_path($blog->author_image);
+            if($path){
+                unlink($path);
+            }
         }
-        $data['author_image'] = $request->file('author_image')->store('authors', 'public');
+        $image1=$request->file('author_image');
+        $imageName1=uniqid().'.'.$image1->getClientOriginalExtension();
+        $image1->move(public_path('upload/blog'),$imageName1);
+        $data['author_image'] = 'upload/blog/'.$imageName1;
     }
 
     $blog->update($data);
@@ -91,15 +110,20 @@ class BlogController extends Controller
 public function destroy($id)
 {
     $blog = AddBlog::findOrFail($id);
-
-    // Delete images from storage
-    if ($blog->image && \Storage::disk('public')->exists($blog->image)) {
-        \Storage::disk('public')->delete($blog->image);
+    if($blog->image){
+        $path=public_path($blog->image);
+        if($path){
+            unlink($path);
+        }
+    }
+    if($blog->author_image){
+        $path=public_path($blog->author_image);
+        if($path){
+            unlink($path);
+        }
     }
 
-    if ($blog->author_image && \Storage::disk('public')->exists($blog->author_image)) {
-        \Storage::disk('public')->delete($blog->author_image);
-    }
+
 
     $blog->delete();
 

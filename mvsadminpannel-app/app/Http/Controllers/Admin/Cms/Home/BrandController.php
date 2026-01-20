@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin\Cms\Home;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Brand;
-
+use App\Models\HomeSetting;
 class BrandController extends Controller
 {
     //
@@ -26,10 +26,16 @@ class BrandController extends Controller
         $data = $request->only('name');
 
         if ($request->hasFile('image_bw')) {
-            $data['image_bw'] = $request->file('image_bw')->store('brands', 'public');
+            $image=$request->file('image_bw');
+            $imageName=uniqid().'.'.$image->getClientOriginalExtension();
+            $image->move(public_path('upload/brand'),$imageName);
+            $data['image_bw'] = 'upload/brand/'.$imageName;
         }
         if ($request->hasFile('image_color')) {
-            $data['image_color'] = $request->file('image_color')->store('brands', 'public');
+            $image1=$request->file('image_color');
+            $imageName1=uniqid().'.'.$image1->getClientOriginalExtension();
+            $image1->move(public_path('upload/brand'),$imageName1);
+            $data['image_color'] = 'upload/brand/'.$imageName1;
         }
 
         Brand::create($data);
@@ -39,7 +45,7 @@ class BrandController extends Controller
 
 
     public function index(){
-        $brands = Brand::all();
+        $brands = Brand::latest()->get();
         return view('admin.cms.home.brand.index', compact('brands'));
     }
 
@@ -55,13 +61,32 @@ public function update(Request $request, Brand $brand) {
     ]);
 
     $data = $request->only('name');
-
     if ($request->hasFile('image_bw')) {
-        $data['image_bw'] = $request->file('image_bw')->store('brands', 'public');
+        if($brand->image_bw){
+            $path=public_path($brand->image_bw);
+            if($path){
+                unlink($path);
+            }
+        }
+        $image=$request->file('image_bw');
+        $imageName=uniqid().'.'.$image->getClientOriginalExtension();
+        $image->move(public_path('upload/brand'),$imageName);
+        $data['image_bw'] = 'upload/brand/'.$imageName;
     }
     if ($request->hasFile('image_color')) {
-        $data['image_color'] = $request->file('image_color')->store('brands', 'public');
+        if($brand->image_color){
+            $path1=public_path($brand->image_color);
+            if($path1){
+                unlink($path1);
+            }
+        }
+        $image1=$request->file('image_color');
+        $imageName1=uniqid().'.'.$image1->getClientOriginalExtension();
+        $image1->move(public_path('upload/brand'),$imageName1);
+        $data['image_color'] = 'upload/brand/'.$imageName1;
     }
+
+
 
     $brand->update($data);
 
@@ -73,5 +98,10 @@ public function destroy(Brand $brand) {
     return redirect()->route('cms.brand.index')->with('success', 'Brand deleted successfully.');
 }
 
+public function editHero()
+    {
+        $hero = HomeSetting::first(); // assuming only 1 row
+        return view('admin.cms.home.heroSection.edit', compact('hero'));
+    }
 
 }

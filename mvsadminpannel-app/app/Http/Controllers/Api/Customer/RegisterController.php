@@ -10,15 +10,18 @@ use App\Models\Vendor;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str; 
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Mail\ForgotPasswordOtpMail;
 use Illuminate\Support\Facades\Storage;
+use App\Models\PrivateSeller;
 
 
 class RegisterController extends Controller
 {
     //
 
-   
+
 
 // public function customerSignup(Request $request)
 // {
@@ -78,10 +81,13 @@ class RegisterController extends Controller
 public function customerSignup(Request $request)
 {
     try {
-     
+
         $isVendor = $request->has('store_name') && !empty($request->store_name);
         $roleType = $isVendor ? 'Vendor' : 'Customer';
-
+        // if($request->role=='private'){
+        //     $roleType='Private Seller';
+        //     $isVendor=false;
+        // }
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -137,8 +143,7 @@ public function customerSignup(Request $request)
         // Vendor table insert
         if ($isVendor) {
             Vendor::create([
-                'user_id' => $user->id,
-                'store_name' => $request->store_name,
+                'user_id' => $user->id
             ]);
         }
 
@@ -160,7 +165,64 @@ public function customerSignup(Request $request)
     }
 }
 
+    // otp forgotten password
+    public function storeOtp(Request $request){
+        $request->validate([
+            'email'=>'required'
+        ]);
+        $user=User::where('email',$request->email)->first();
+        if(!$user){
+            return response()->json([
+                'message'=>'Email does not exist'
+            ]);
+        }
+        $opt=rand(100000, 999999);
+        $user->update([
+            'password_reset_otp'=>$opt,
+            'otp_expires_at'=>now()->addMinutes(1),
+        ]);
+        Mail::to($user->email)->send(new ForgotPasswordOtpMail($opt));
 
+
+        return response()->json([
+            'message'=>'Opt Send to email'
+        ]);
+    }
+    public function verifyOtp(Request $request){
+        $request->validate([
+            'email'=>'required',
+            'otp'=>'required'
+        ]);
+        $user=User::where('email',$request->email)->where('password_reset_otp',$request->otp)->first();
+        if(!$user){
+            return response()->json([
+                'message'=>'Invalid Otp'
+            ]);
+        }
+        return response()->json([
+            'message'=>'Otp Varified'
+        ]);
+    }
+    public function updatePassword(Request $request){
+        $request->validate([
+            'email'=>'required',
+            'password'=>'required'
+        ]);
+        $user=user::where('email',$request->email)->first();
+        if(!$user){
+            return response()->json([
+                'message'=>'Process failed'
+            ]);
+        }
+        $user->update([
+            'password'=>Hash::make($request->password),
+            'password_reset_otp'=>null,
+            'otp_expires_at'=>null
+        ]);
+        return response()->json([
+            'message'=>'Password Updated Successfully'
+        ]);
+    }
 
 
 

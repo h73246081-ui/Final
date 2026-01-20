@@ -13,8 +13,8 @@ class TestimonialController extends Controller
     public function create(){
         return view('admin.cms.home.testimonials.create');
     }
-   
- 
+
+
         public function store(Request $request)
     {
         // Validation
@@ -30,7 +30,10 @@ class TestimonialController extends Controller
         // File Upload
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('testimonials', 'public');
+            $image=$request->file('image');
+            $imageName=uniqid().'.'.$image->getClientOriginalExtension();
+            $image->move(public_path('upload/testimonial'),$imageName);
+            $imagePath = 'upload/testimonial/'.$imageName;
         }
 
         // Create Testimonial
@@ -65,13 +68,22 @@ class TestimonialController extends Controller
         'name' => 'required',
         'comments' => 'required',
         'rating' => 'required|integer|min:1|max:5',
-        'image' => 'nullable|image|max:2048'
+        'image' => 'nullable|image'
     ]);
 
     $data = $request->only(['name','role','location','rating','comments']);
 
     if ($request->hasFile('image')) {
-        $data['avatar'] = $request->file('image')->store('testimonials', 'public');
+        if($testimonial->image){
+            $path=public_path($testimonial->image);
+            if($path){
+                unlink($path);
+            }
+        }
+        $image=$request->file('image');
+        $imageName=uniqid().'.'.$image->getClientOriginalExtension();
+        $image->move(public_path('upload/testimonial'),$imageName);
+        $data['avatar'] = 'upload/testimonial/'.$imageName;
     }
 
     $testimonial->update($data);

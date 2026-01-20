@@ -33,7 +33,7 @@ public function categorycount()
         return [
             'id' => $cat->id,
             'name' => $cat->name,
-            'image' => $cat->image ? asset('storage/' . $cat->image) : null,
+            'image' => $cat->image,
             'products_count' => $cat->products_count,
         ];
     });
@@ -171,13 +171,16 @@ public function index(Request $request)
 
 
     public function allProducts()
-{
-    $products = VendorProduct::with(['category', 'vendor'])
-        ->latest()
-        ->get();
-
-    return response()->json($products);
-}
+    {
+        $products = VendorProduct::with(['category', 'vendor'])->where('status','active')->latest()->get();
+//         ->whereHas('vendor', function($query) {
+//             $query->where('status', '!=',
+// 'inactive');
+        // })
+        // ->latest()
+        // ->get();
+        return response()->json($products);
+    }
 
 
 public function productDetail($id)
@@ -228,9 +231,9 @@ public function productsByCategory($id)
     // Recent Products API (session-style, single endpoint)
     public function recentProducts()
     {
-        $products = VendorProduct::with(['category:id,name', 'vendor:id,store_name'])
-            ->orderBy('created_at', 'desc') 
-            ->take(10)                        
+        $products = VendorProduct::with(['category','vendor.vendorStore'])
+            ->orderBy('created_at', 'desc')
+            ->take(10)
             ->get();
 
         return response()->json([

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\Cms\About\AboutValueController;
 use App\Http\Controllers\Admin\Role\RoleController;
 use App\Http\Controllers\Admin\WebsiteSettingController;
 use App\Http\Controllers\Admin\Cms\Contact\ContactController;
+use App\Http\Controllers\Admin\Subscriber\SubscribeController;
 use App\Http\Controllers\Admin\Cms\Blog\BlogController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Admin\Product\CategoryController;
@@ -20,11 +21,16 @@ use App\Http\Controllers\Admin\Vendor\VendorProfileController;
 use App\Http\Controllers\Admin\Cms\Home\BrandController;
 use App\Http\Controllers\Admin\Vendor\Product\ProductController;
 use App\Http\Controllers\Admin\FlashDealController;
+use App\Http\Controllers\Admin\TermCondition\TermConditionController;
 use App\Http\Controllers\Section1Controller;
 use App\Http\Controllers\Section2Controller;
 use App\Http\Controllers\Section3Controller;
 use App\Http\Controllers\Admin\Cms\Home\HeroSectionController;
 use App\Http\Controllers\Admin\Vendor\Store\StoreController;
+use App\Http\Controllers\Admin\PrivateSeller\PrivateSellerController;
+use App\Http\Controllers\Admin\Reports\ReportController;
+use App\Http\Controllers\Admin\Package\PackageController;
+use App\Http\Controllers\Api\VendorProductController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -36,17 +42,59 @@ Auth::routes();
 Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
 
    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
-   Route::view('/profile', 'admin.profile')->name('admin.profile');
+//    Route::view('/profile', 'admin.profile')->name('admin.profile');
+    Route::get('edit-profile',[DashboardController::class,'editProfile'])->name('admin.profile');
+    Route::put('update-profile',[DashboardController::class,'updateProfile'])->name('update.profile');
+    // term & services
+    route::get('terms_condition',[TermConditionController::class,'indexTerm'])->name('indexTerm');
+    route::post('store-term-conditions',[TermConditionController::class,'store'])->name('storeTerm');
+    route::put('update-term-condition/{id}',[TermConditionController::class,'update'])->name('updateTerm');
+    route::delete('delete-term-condition/{id}',[TermConditionController::class,'delete'])->name('deleteTerm');
+    Route::get('/terms/{id}/edit', [TermConditionController::class, 'edit'])->name('editTerm');
+    // privacy polices
+    route::get('privacy-policices',[TermConditionController::class,'indexPolicy'])->name('indexPolicy');
+    route::post('store-privacy-policices',[TermConditionController::class,'storePolicy'])->name('storePolicy');
+    Route::get('/policy/{id}/edit', [TermConditionController::class, 'editPolicy'])->name('editTerm');
+    route::put('update-privacy-policices/{id}',[TermConditionController::class,'updatePolicy'])->name('updatePolicy');
+    route::delete('delete-privacy-policy/{id}',[TermConditionController::class,'deletePolicy'])->name('deletePolicy');
+    // comission
+    Route::get('comission',[DashboardController::class,'editComission'])->name('editComission');
+    Route::put('comission',[DashboardController::class,'updateCommission'])->name('updateCommission');
+    // product limit
+    Route::get('product-limit',[DashboardController::class,'editLimit'])->name('editLimit');
+    Route::put('update-product-limit',[DashboardController::class,'updateLimit'])->name('updateLimit');
+
+
+
+    // all selers
+    route::get('private-selers',[PrivateSellerController::class,'allPrivateSeller'])->name('allPrivateSellers');
+    //all sub
+    route::get('all-subcribers',[SubscribeController::class,'allSub'])->name('allSub');
+    route::delete('delete-subcriber/{id}',[SubscribeController::class,'delete'])->name('deleteSub');
+    // orders
+    route::get('all-orders',[ReportController::class,'allOrder'])->name('allOrder');
+    route::get('detail-order/{id}',[ReportController::class,'detailOrder'])->name('detailOrder');
+    // packages
+    Route::get('/packages', [PackageController::class, 'index'])->name('packages.index');
+    Route::post('/packages/store', [PackageController::class, 'store'])->name('packages.store');
+    Route::get('/packages/edit/{id}', function ($id) {
+        return \App\Models\Package::findOrFail($id);
+    });
+    Route::put('/packages/update/{id}', [PackageController::class, 'update'])->name('packages.update');
+    Route::delete('/packages/delete/{id}', [PackageController::class, 'destroy'])->name('packages.delete');
+    Route::get('/seller-package', [PackageController::class, 'vendorPackage'])->name('vendorPackage');
+
 
 
    Route::prefix('products')->group(function() {
      Route::get('/show', [ProductController::class, 'index'])->name('product.index');
-     Route::get('/{id}', [ProductController::class, 'show'])->name('product.show'); 
+     Route::get('/{id}', [ProductController::class, 'show'])->name('product.show');
+     Route::post('product/toggle-status', [ProductController::class, 'toggleStatus'])->name('product.toggleStatus');
    });
 
 
    Route::get('/all-stores', [StoreController::class, 'index'])->name('store.index');
-   Route::get('/{id}', [StoreController::class, 'show'])->name('show');
+   Route::get('detail-store/{id}', [StoreController::class, 'show'])->name('show');
 
    Route::prefix('flash-deals')->middleware(['auth'])->group(function() {
       Route::get('/show', [FlashDealController::class, 'index'])->name('flash.index');
@@ -83,7 +131,7 @@ Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
   Route::get('/website-setting', [WebsiteSettingController::class, 'WebsiteSetting'])->name('website.setting');
   Route::put('/website-settings-update', [WebsiteSettingController::class, 'update'])->name('website-settings.update');
 
-  
+
    Route::prefix('testimonials')->group(function() {
      Route::get('/show', [TestimonialController::class,'index'])->name('cms.testimonial.index');
      Route::get('/create', [TestimonialController::class, 'create'])->name('cms.testimonials.create');
@@ -94,7 +142,7 @@ Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
    });
 
 
-   Route::get('/edit', [HeroSectionController::class, 'edit'])->name('cms.hero.index');
+   Route::get('/edit-hero-section', [HeroSectionController::class, 'editHero'])->name('editHero');
    Route::put('/hero-section/update', [HeroSectionController::class, 'update'])->name('admin.cms.home.hero_section.update');
 
 
@@ -154,14 +202,14 @@ Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
       Route::get('journey-store', [AboutJourneyController::class, 'create'])->name('cms.journey.store');
       Route::post('journey-save', [AboutJourneyController::class, 'store'])->name('cms.journey.save');
       Route::get('journey-edit/{id}', [AboutJourneyController::class, 'edit'])->name('journey.edit');
-      Route::post('journey-update/{id}', [AboutJourneyController::class, 'update'])->name('journey.update');
+      Route::put('journey-update/{id}', [AboutJourneyController::class, 'update'])->name('journey.update');
       Route::delete('journey-delete/{id}', [AboutJourneyController::class, 'delete'])->name('journey.delete');
 
       Route::get('/value-show', [AboutValueController::class, 'index'])->name('cms.about.value');
       Route::get('/value-store', [AboutValueController::class, 'create'])->name('cms.value.store');
       Route::post('/value-save', [AboutValueController::class, 'store'])->name('cms.value.save');
       Route::get('/value-edit/{id}', [AboutValueController::class, 'edit'])->name('cms.value.edit');
-      Route::post('/value-update/{id}', [AboutValueController::class, 'update'])->name('cms.value.update');
+      Route::put('/value-update/{id}', [AboutValueController::class, 'update'])->name('cms.value.update');
       Route::delete('/value-delete/{id}', [AboutValueController::class, 'delete'])->name('cms.value.delete');
 
    });
@@ -169,16 +217,18 @@ Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
 
    Route::prefix('contact')->group(function() {
      Route::get('message', [ContactController::class, 'contact'])->name('cms.contact.messages');
-     Route::get('delete/{id}', [ContactController::class, 'destroy'])->name('cms.contact.delete');
+     Route::delete('delete-message/{id}', [ContactController::class, 'destroy'])->name('cms.contact.delete');
+     Route::post('reply/{id}',[ContactController::class,'reply'])->name('contact.reply');
    });
-
+   Route::put('update-banner', [ContactController::class, 'updateBanner'])->name('cms.update.banner');
+   Route::get('edit-banner', [ContactController::class, 'editBanner'])->name('editBanner');
 
 
    Route::prefix('blogs')->group(function() {
       Route::get('/index', [BlogController::class ,'index'])->name('cms.blog.index');
       Route::get('/create', [BlogController::class ,'create'])->name('cms.blog.create');
       Route::post('/store', [BlogController::class, 'store'])->name('cms.blog.store');
-      Route::delete('/delete/{id}', [BlogController::class, 'delete'])->name('cms.blog.delete');
+      Route::delete('/delete/{id}', [BlogController::class, 'destroy'])->name('cms.blog.delete');
       Route::get('/edit/{id}', [BlogController::class, 'edit'])->name('cms.blog.edit');
       Route::put('/update/{id}', [BlogController::class, 'update'])->name('cms.blog.update');
    });
@@ -191,20 +241,43 @@ Route::prefix('admin')->middleware(['auth','role:admin'])->group(function() {
      Route::post('/store', [RoleController::class, 'store'])->name('role.store');
      Route::delete('/roles/{id}', [RoleController::class, 'destroy'])->name('role.destroy');
     Route::get('/{id}', [RoleController::class, 'edit'])->name('roles.edit');
-    Route::post('/{id}', [RoleController::class, 'update'])->name('roles.update.role');
+    Route::put('update-role/{id}', [RoleController::class, 'update'])->name('roles.update.role');
    });
+   // permissions
+   Route::get('all-permission', [RoleController::class, 'allPermission'])->name('allPermission');
+   Route::post('store-permission', [RoleController::class, 'storePermission'])->name('storePermission');
+   Route::put('update-permissions/{id}', [RoleController::class, 'updatePermission'])->name('permission.update');
+   Route::delete('delete-permission/{id}', [RoleController::class, 'destroyPermission'])->name('destroyPermission');
+
+   Route::get('edit-permission/{id}', [RoleController::class, 'editPermissions'])->name('editPermissions');
+   Route::put('update-permission/{id}', [RoleController::class, 'assignPermissions'])->name('assignPermissions');
+
+
 
 
    Route::prefix('users')->group(function() {
        Route::get('/show', [UserController::class, 'index'])->name('user.index');
-        Route::get('/delete/{id}', [UserController::class, 'delete'])->name('user.delete');
+       Route::post('/store-user', [UserController::class, 'storeUser'])->name('user.store');
+
+    //    Route::get('/roles', [UserController::class, ''])->name('user.index');
+
+        Route::delete('/delete/{id}', [UserController::class, 'delete'])->name('user.delete');
    });
 
 
       Route::prefix('vendors')->group(function() {
       Route::get('/show', [VendorProfileController::class, 'vendor'])->name('vendor.index');
+      Route::get('/buisness', [VendorProfileController::class, 'Buisnessvendor'])->name('vendor.busi');
+      Route::put('/restrict/{id}', [VendorProfileController::class, 'redtrictVendor'])->name('vendor.restrict');
+      Route::put('/approved/{id}', [VendorProfileController::class, 'activateVendor'])->name('vendor.approved');
+      Route::delete('/delete-vendor/{id}', [VendorProfileController::class, 'deleteVendor'])->name('vendor.delete');
+      Route::post('vendor/toggle-status', [VendorProfileController::class, 'toggleStatus'])->name('vendor.toggleStatus');
+
    });
 
 });
 
+
 // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::post('product-store', [VendorProductController::class, 'store'])->name('storeProduct');
+Route::get('add', [VendorProductController::class, 'testBlade']);

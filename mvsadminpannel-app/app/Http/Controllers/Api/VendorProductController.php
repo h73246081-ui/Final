@@ -9,9 +9,12 @@ use App\Models\Vendor;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Category;
+use App\Models\ProductLimit;
 use App\Models\SubCategory;
+use App\Models\VendorPackage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 
 class VendorProductController extends Controller
@@ -108,75 +111,117 @@ public function index()
     // =========================
     // 3. STORE PRODUCT
     // =========================
+    // public function testBlade(){
+    //     return view('test');
 
-public function store(Request $request)
- {
-    $vendor = Auth::user()->vendor;
+    // }
 
-    if (!$vendor) {
-        return response()->json(['error' => 'Vendor not found'], 404);
-    }
 
-          // simple validation
-        if (!$request->name || !$request->price || !$request->stock) {
-            return response()->json(['error' => 'Name, price & stock required'], 422);
+    public function store(Request $request)
+    {
+        $vendor = Auth::user()->vendor;
+
+        if (!$vendor) {
+            return response()->json(['error' => 'Vendor not found'], 404);
         }
 
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'vendor_package_id' => 'nullable|exists:vendor_packages,id',
+            'images' => 'nullable|array',
+            'images.*' => 'image',
+        ]);
 
-//     // simple validation
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'price' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
-        // 'sizes' => 'nullable|array',       // new
-        // 'colors' => 'nullable|array',       // new
-        // 'specifications' => 'nullable|string|max:1000', // new
-    ]);
+        $count = VendorProduct::where('vendor_id', $vendor->id)->count();
+        $limit = ProductLimit::first();
 
-    $product = new VendorProduct();
-    $product->vendor_id = $vendor->id;
-    $product->name = $request->name;
-    $product->description = $request->description;
-    $product->price = $request->price;
-    $product->discount = $request->discount ?? 0;
-    $product->stock = $request->stock;
-    $product->category_id = $request->category_id;
-    $product->subcategory_id = $request->subcategory_id;
-    $product->meta_title = $request->meta_title;
-    $product->meta_description = $request->meta_description;
-    $product->product_keyword = $request->product_keyword;
+        if ($vendor->seller_type === 'private' && $limit && $count >= $limit->limit) {
+            return response()->json([
+                'message' => 'Product limit reached. Please buy a package.'
+            ], 403);
+        }
 
-    // ✅ New JSON fields
-    $product->sizes = $request->sizes ?? [];
-    $product->color = $request->colors ?? [];
-    $product->specification = $request->specifications ?? null;
+        DB::beginTransaction();
 
- 
-    if ($request->hasFile('image')) {
+        try {
 
-    // Delete old image if exists
-    if ($product->image) {
-        $oldPath = public_path($product->image);
-        if (file_exists($oldPath)) {
-            unlink($oldPath);
+            $vendorPackage = null;
+
+            if ($request->vendor_package_id) {
+
+                $vendorPackage = VendorPackage::where('id', $request->vendor_package_id)
+                    ->where('vendor_id', $vendor->id)
+                    ->paid()
+                    ->active()
+                    ->with('package')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$vendorPackage) {
+                    return response()->json([
+                        'message' => 'Invalid or inactive package'
+                    ], 403);
+                }
+
+                if ($vendorPackage->product_added >= $vendorPackage->package->product_limit) {
+                    return response()->json([
+                        'message' => 'Package product limit reached'
+                    ], 403);
+                }
+            }
+
+            $product = new VendorProduct();
+            $product->vendor_id = $vendor->id;
+            $product->vendor_package_id = $vendorPackage?->id;
+            $product->name = $request->name;
+            $product->description = $request->description;
+            $product->price = $request->price;
+            $product->discount = $request->discount ?? 0;
+            $product->stock = $request->stock;
+            $product->category_id = $request->category_id;
+            $product->subcategory_id = $request->subcategory_id;
+            $product->meta_title = $request->meta_title;
+            $product->meta_description = $request->meta_description;
+            $product->product_keyword = $request->product_keyword;
+            $product->sizes = $request->sizes ?? [];
+            $product->color = $request->colors ?? [];
+            $product->specification = $request->specifications ?? null;
+
+            $imagePaths = [];
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+                    $image->move(public_path('upload/products'), $imageName);
+                    $imagePaths[] = 'upload/products/' . $imageName;
+                }
+            }
+
+            $product->image = $imagePaths;
+            $product->final_price = $request->price - ($request->price * (($request->discount ?? 0) / 100));
+            $product->save();
+
+            if ($vendorPackage) {
+                $vendorPackage->increment('product_added');
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Product added successfully',
+                'product' => $product
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
-    // Upload new image
-    $image = $request->file('image');
-    $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
-    $image->move(public_path('upload/products'), $imageName);
-    $product->image = 'upload/products/' . $imageName;
-}
-
-
-    $product->save();
-
-    return response()->json([
-        'message' => 'Product added successfully',
-        'product' => $product
-    ], 201);
-}
 
 
 
@@ -258,15 +303,32 @@ public function store(Request $request)
     if ($request->color) $product->color = $request->colors;       // array
     if ($request->specification) $product->specification = $request->specifications; // string
 
-    // ✅ Image update
-    if ($request->hasFile('image')) {
-        if ($product->image && Storage::disk('public')->exists($product->image)) {
-            Storage::disk('public')->delete($product->image);
+
+    if ($request->hasFile('images')) {
+        if (is_array($product->image)) {
+            foreach ($product->image as $oldImage) {
+
+                if ($oldImage && file_exists(public_path($oldImage))) {
+                    @unlink(public_path($oldImage));
+                }
+            }
         }
 
-        $path = $request->file('image')->store('products', 'public');
-        $product->image = $path;
+       $imagePaths = [];
+
+        foreach ($request->file('images') as $image) {
+            if ($image) {
+
+                $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('upload/products'), $imageName);
+
+                $imagePaths[] = 'upload/products/' . $imageName;
+            }
+        }
+
+        $product->image = $imagePaths;
     }
+
 
     $product->save();
 
@@ -295,8 +357,13 @@ public function store(Request $request)
         }
 
         // delete image
-        if ($product->image && Storage::disk('public')->exists($product->image)) {
-            Storage::disk('public')->delete($product->image);
+        if (is_array($product->image)) {
+            foreach ($product->image as $oldImage) {
+
+                if ($oldImage && file_exists(public_path($oldImage))) {
+                    @unlink(public_path($oldImage));
+                }
+            }
         }
 
         $product->delete();

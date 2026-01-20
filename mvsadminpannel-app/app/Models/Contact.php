@@ -11,6 +11,9 @@ class Contact extends Model
        'name',
        'email',
        'subject',
-       'message'
+       'message',
+       'reply',
+       'replied_at',
+       'status'
     ];
 }

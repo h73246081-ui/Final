@@ -18,6 +18,7 @@ class VendorStore extends Model
         'address',
         'response_rate',
         'image',
+        'status',
         'date',
     ];
 

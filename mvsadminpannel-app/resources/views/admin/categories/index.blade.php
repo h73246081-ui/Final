@@ -1,87 +1,257 @@
 @extends('layouts.app')
 
 @section('head')
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-        <style>
-        /* Force table header to match Add Brand button color */
-        #categoryTable thead th {
-            background-color: #0d6efd !important; /* Bootstrap primary */
-            color: #fff !important;
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<!-- Buttons for Excel/PDF Export -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+<style>
+    /* Main Card Styling */
+    .main-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+        border-radius: 12px 12px 0 0;
+        padding: 20px 25px;
+    }
+
+    /* Filter Card */
+    .filter-card {
+        background-color: #f8fafc;
+        border-left: 4px solid #0d6efd;
+        border-radius: 8px;
+        padding: 15px;
+    }
+
+    /* Table header style */
+    #categoryTable thead th {
+        background-color: #0d6efd !important;
+        color: #fff !important;
+        font-weight: 600;
+    }
+
+    /* Button polish */
+    .btn-export {
+        border-radius: 6px;
+        font-weight: 500;
+        padding: 8px 16px;
+    }
+
+    /* Filter input styling */
+    .filter-input {
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        transition: all 0.3s ease;
+    }
+
+    .filter-input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    }
+
+    /* Image styling */
+    .category-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+</style>
+
+<style>
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .card-header-custom {
+            padding: 1rem !important;
         }
-    </style>
+
+        .card-header-custom h4 {
+            font-size: 1.25rem;
+        }
+
+        .btn-export, .btn-light {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .btn i {
+            margin-right: 0.25rem !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .card-header-custom .col-md-6 {
+            text-align: center;
+        }
+
+        .d-flex.flex-wrap {
+            justify-content: center !important;
+            gap: 10px !important;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 90px;
+        }
+
+        .card-header-custom h4 {
+            font-size: 1.1rem;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .d-flex.gap-2 {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn-export, .btn-light {
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+    }
+</style>
 @endsection
 
 @section('content')
 <div class="container mt-4">
+    <!-- Main Card containing everything -->
+    <div class="card main-card" style="margin-top: -30px;">
+        <!-- Card Header with Title and Add Button -->
+        <div class="card-header card-header-custom">
+            <div class="row align-items-center">
+                <!-- Title on Left -->
+                <div class="col-12 col-md-6 mb-3 mb-md-0">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                        <i class="bi bi-grid text-white fs-3 me-3"></i>
+                        <h4 class="mb-0 text-white">Category Management</h4>
+                    </div>
+                </div>
 
-    <div class="d-flex justify-content-between mb-3">
-        <h2>All Categories</h2>
-        <!-- Button to Open Add Modal -->
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-           Add Category
-        </button>
-    </div>
+                <!-- Buttons on Right -->
+                <div class="col-12 col-md-6">
+                    <div class="d-flex flex-wrap justify-content-center justify-content-md-end align-items-center gap-2">
+                        <div class="d-flex gap-2">
+                            <button id="exportExcel" class="btn btn-success btn-export">
+                                <i class="bi bi-file-earmark-excel me-1"></i>
+                                <span class="d-none d-sm-inline">Excel</span>
+                            </button>
+                            <button id="exportPDF" class="btn btn-danger btn-export">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>
+                                <span class="d-none d-sm-inline">PDF</span>
+                            </button>
+                        </div>
+                        <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                            <i class="bi bi-plus-circle me-1 me-md-2"></i>
+                            <span class="d-none d-sm-inline">Add New Category</span>
+                            <span class="d-inline d-sm-none">Add</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="card">
+
+        <!-- Card Body with Filter Section -->
         <div class="card-body">
-            <table id="categoryTable" class="table table-striped table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Image</th>
-                        <th>Meta Title</th>
-                        <th>Created At</th>
-                        <th width="180">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($categories ?? [] as $category)
+            <!-- Filter Card -->
+            <div class="filter-card mb-4">
+                <div style="display: flex; justify-content:space-between; margin-top: -6px;">
+                    <h6 class="mb-3 text-primary"><i class="bi bi-funnel me-2"></i>Filter Options</h6>
+                </div>
+                <div class="row g-3">
+                    {{-- <div class="col-md-4">
+                        <label class="form-label fw-semibold">Category Name</label>
+                        <input type="text" id="filterName" class="form-control filter-input" placeholder="Search by name...">
+                    </div> --}}
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Start Date</label>
+                        <input type="date" id="filterStartDate" class="form-control filter-input">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">End Date</label>
+                        <input type="date" id="filterEndDate" class="form-control filter-input">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12 d-flex justify-content-between">
+                        <div>
+                            <button id="clearFilters" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-x-circle me-1"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DataTable -->
+            <div class="table-responsive">
+                <table id="categoryTable" class="table table-hover table-striped">
+                    <thead>
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $category->name }}</td>
+                            <th width="50">#</th>
+                            <th>Name</th>
+                            <th>Image</th>
+                            <th>Meta Title</th>
+                            <th>Created At</th>
+                            <th width="150" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($categories as $index => $category)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td class="fw-semibold">{{ $category->name }}</td>
                             <td>
                                 @if($category->image)
-                                    <img src="{{ asset('storage/'.$category->image) }}" width="60">
+                                    <img src="{{ asset($category->image) }}" class="category-img">
                                 @else
                                     <span class="text-muted">No Image</span>
                                 @endif
                             </td>
-                            <td>{{ $category->meta_title }}</td>
+                            <td>{{ $category->meta_title ?? '-' }}</td>
                             <td>{{ $category->created_at->format('d M Y') }}</td>
-                            <td>
-                                <button class="btn btn-sm btn-warning"
-                                    onclick="openEditModal(
-                                        {{ $category->id }},
-                                        '{{ addslashes($category->name) }}',
-                                        '{{ addslashes($category->description) }}',
-                                        '{{ addslashes($category->question_description) }}',
-                                        '{{ addslashes($category->meta_title) }}',
-                                        '{{ addslashes($category->meta_description) }}',
-                                        '{{ addslashes($category->meta_keyword) }}',
-                                        '{{ $category->image ? asset('storage/'.$category->image) : '' }}'
-                                    )">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                <form id="delete-form-{{ $category->id }}" 
-                                      action="{{ route('category.delete', $category->id) }}" 
-                                      method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete({{ $category->id }})">
-                                        <i class="bi bi-trash3"></i>
+                            <td class="text-center">
+                                <div class="btn-group" role="group" style="gap: 6px;">
+                                    <button class="btn btn-sm btn-outline-warning"
+                                        onclick="openEditModal(
+                                            {{ $category->id }},
+                                            '{{ addslashes($category->name) }}',
+                                            '{{ addslashes($category->description) }}',
+                                            '{{ addslashes($category->question_description) }}',
+                                            '{{ addslashes($category->meta_title) }}',
+                                            '{{ addslashes($category->meta_description) }}',
+                                            '{{ addslashes($category->meta_keyword) }}',
+                                            '{{ $category->image ? asset($category->image) : '' }}'
+                                        )"
+                                        title="Edit">
+                                        <i class="bi bi-pencil-square"></i>
                                     </button>
-                                </form>
+                                    <form id="delete-form-{{ $category->id }}"
+                                          action="{{ route('category.delete', $category->id) }}"
+                                          method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDelete({{ $category->id }})"
+                                                title="Delete">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="text-center">No Categories Found</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        @empty
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -100,43 +270,43 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">Category Name</label>
+                        <label class="form-label fw-semibold">Category Name</label>
                         <input type="text" name="name" class="form-control" value="{{ old('name') }}">
                         @error('name')<small class="text-danger">{{ $message }}</small>@enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Description</label>
+                        <label class="form-label fw-semibold">Description</label>
                         <textarea name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Any Question Description</label>
+                        <label class="form-label fw-semibold">Any Question Description</label>
                         <textarea name="question_description" class="form-control" rows="3">{{ old('question_description') }}</textarea>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">Meta Title</label>
+                        <label class="form-label fw-semibold">Meta Title</label>
                         <input type="text" name="meta_title" class="form-control" value="{{ old('meta_title') }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Meta Description</label>
+                        <label class="form-label fw-semibold">Meta Description</label>
                         <textarea name="meta_description" class="form-control" rows="2">{{ old('meta_description') }}</textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Meta Keyword</label>
+                        <label class="form-label fw-semibold">Meta Keyword</label>
                         <input type="text" name="meta_keyword" class="form-control" value="{{ old('meta_keyword') }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Category Image</label>
+                        <label class="form-label fw-semibold">Category Image</label>
                         <input type="file" name="image" class="form-control">
                     </div>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="submit" class="btn btn-success">Save Category</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </form>
     </div>
@@ -158,33 +328,33 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">Category Name</label>
+                        <label class="form-label fw-semibold">Category Name</label>
                         <input type="text" name="name" id="editCategoryName" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Description</label>
+                        <label class="form-label fw-semibold">Description</label>
                         <textarea name="description" id="editCategoryDescription" class="form-control" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Any Question Description</label>
+                        <label class="form-label fw-semibold">Any Question Description</label>
                         <textarea name="question_description" id="editCategoryQuestionDescription" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">Meta Title</label>
+                        <label class="form-label fw-semibold">Meta Title</label>
                         <input type="text" name="meta_title" id="editCategoryMetaTitle" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Meta Description</label>
+                        <label class="form-label fw-semibold">Meta Description</label>
                         <textarea name="meta_description" id="editCategoryMetaDescription" class="form-control" rows="2"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Meta Keyword</label>
+                        <label class="form-label fw-semibold">Meta Keyword</label>
                         <input type="text" name="meta_keyword" id="editCategoryMetaKeyword" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Category Image</label>
+                        <label class="form-label fw-semibold">Category Image</label>
                         <input type="file" name="image" class="form-control" id="editCategoryImageInput">
                         <div class="mt-2" id="editCategoryImagePreview"></div>
                     </div>
@@ -192,14 +362,13 @@
             </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Update Category</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Update Category</button>
         </div>
       </form>
     </div>
   </div>
 </div>
-
 @endsection
 
 @section('scripts')
@@ -207,19 +376,134 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<!-- Export Buttons -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 
 <script>
 $(document).ready(function () {
-    $('#categoryTable').DataTable({
+    // Initialize DataTable with Export Buttons
+    var table = $('#categoryTable').DataTable({
         responsive: true,
         autoWidth: false,
+        dom: '<"row"<"col-md-6"l><"col-md-6"f>><"row"<"col-md-12"tr>><"row"<"col-md-5"i><"col-md-7"p>>',
         language: {
-            search: "🔍 Search:",
+            search: "🔍 Quick Search:",
             lengthMenu: "Show _MENU_ entries",
             zeroRecords: "No matching records found",
             info: "Showing _START_ to _END_ of _TOTAL_ entries",
-            paginate: { previous: "←", next: "→" }
+            infoEmpty: "No entries available",
+            infoFiltered: "(filtered from _MAX_ total entries)",
+            paginate: {
+                previous: "← Previous",
+                next: "Next →"
+            }
+        },
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                text: '<i class="bi bi-file-earmark-excel me-1"></i>Excel',
+                className: 'btn btn-success btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 3, 4] // Adjust columns as needed
+                },
+                title: 'Categories_Export_' + new Date().toISOString().slice(0,10)
+            },
+            {
+                extend: 'pdfHtml5',
+                text: '<i class="bi bi-file-earmark-pdf me-1"></i>PDF',
+                className: 'btn btn-danger btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 3, 4] // Adjust columns as needed
+                },
+                title: 'Categories_Export_' + new Date().toISOString().slice(0,10),
+                customize: function (doc) {
+                    doc.content[1].table.widths = ['10%', '30%', '30%', '30%'];
+                }
+            }
+        ],
+        initComplete: function() {
+            // Add export buttons to the custom export section
+            $('.export-buttons').append($('.dt-buttons').html());
+            $('.dt-buttons').remove();
         }
+    });
+
+    // Filter by Name
+    $('#filterName').on('keyup', function() {
+        table.column(1).search(this.value).draw();
+    });
+
+    // Filter by Date Range
+    $('#filterStartDate, #filterEndDate').on('change', function() {
+        var startDate = $('#filterStartDate').val();
+        var endDate = $('#filterEndDate').val();
+
+        if (startDate || endDate) {
+            // Custom filtering logic for date range
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var dateColumn = new Date(data[4]); // Created At column
+
+                    // Convert date string to Date object
+                    var dateStr = data[4];
+                    var dateParts = dateStr.split(' ');
+                    var monthNames = {
+                        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                    };
+
+                    var rowDate = new Date(
+                        dateParts[2], // Year
+                        monthNames[dateParts[1]], // Month
+                        dateParts[0] // Day
+                    );
+
+                    var start = startDate ? new Date(startDate) : null;
+                    var end = endDate ? new Date(endDate) : null;
+
+                    if (start && end) {
+                        return rowDate >= start && rowDate <= end;
+                    } else if (start) {
+                        return rowDate >= start;
+                    } else if (end) {
+                        return rowDate <= end;
+                    }
+                    return true;
+                }
+            );
+
+            table.draw();
+            // Remove the filter function after applying
+            $.fn.dataTable.ext.search.pop();
+        } else {
+            table.column(4).search('').draw();
+        }
+    });
+
+    // Clear all filters
+    $('#clearFilters').on('click', function() {
+        $('#filterName').val('');
+        $('#filterStartDate').val('');
+        $('#filterEndDate').val('');
+
+        table.columns().search('').draw();
+        table.draw();
+    });
+
+    // Export Excel button click
+    $('#exportExcel').on('click', function() {
+        table.button('.buttons-excel').trigger();
+    });
+
+    // Export PDF button click
+    $('#exportPDF').on('click', function() {
+        table.button('.buttons-pdf').trigger();
     });
 });
 
@@ -237,7 +521,7 @@ function openEditModal(id, name, description, questionDescription, metaTitle, me
     $('#editCategoryMetaKeyword').val(metaKeyword);
 
     if(imageUrl){
-        $('#editCategoryImagePreview').html('<img src="'+imageUrl+'" width="120" class="mt-2">');
+        $('#editCategoryImagePreview').html('<img src="'+imageUrl+'" class="category-img">');
     } else {
         $('#editCategoryImagePreview').html('');
     }
@@ -246,5 +530,21 @@ function openEditModal(id, name, description, questionDescription, metaTitle, me
     editModal.show();
 }
 
+// Confirm Delete
+function confirmDelete(id){
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $('#delete-form-' + id).submit();
+        }
+    });
+}
 </script>
 @endsection

@@ -12,11 +12,11 @@ class StoreController extends Controller
     //
     public function index(){
           // Get all stores with products count
-        $stores = VendorStore::withCount('vendorProducts')->get();
+        $stores = VendorStore::withCount('vendorProducts')->latest()->get();
         return view('admin.vendor.stores.index', compact('stores'));
     }
 
-    
+
     public function show($id){
         $store = VendorStore::with('vendorProducts')->findOrFail($id);
         return view('admin.vendor.stores.view', compact('store'));

@@ -84,17 +84,19 @@ class VendorStoreController extends Controller
     return response()->json([
         'store' => $store
     ], 200);
-} 
+}
 
 
 
 public function allStores()
 {
     // Fetch all vendor stores
-    $stores = VendorStore::all()->map(function($store) {
+    $stores = VendorStore::where('status','!=','inactive')->with('vendor')->get()->map(function($store) {
         $store->products_count = VendorProduct::where('vendor_id', $store->vendor_id)->count();
         return $store;
     });
+    // $inactive=VendorStore::where('status','inactive')->get();
+    // dd($inactive);
 
     return response()->json([
         'stores' => $stores
@@ -116,6 +118,61 @@ public function storeDetail($id)
     return response()->json([
         'store' => $store
     ], 200);
+}
+// update store
+public function updateStore(Request $request,$id)
+{
+    $vendor = Auth::user()->vendor;
+
+    if (!$vendor) {
+        return response()->json(['error' => 'Vendor not found'], 404);
+    }
+
+    // Basic validation
+    if (!$request->store_name) {
+        return response()->json(['error' => 'Store name is required'], 422);
+    }
+
+    $request->validate([
+        'store_name' => 'required',
+        'email' => 'required',
+        'phone' => 'required',
+        // 'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    $store =VendorStore::find($id);
+    $store->vendor_id = $vendor->id;
+    $store->store_name = $request->store_name;
+    // $store->slug = Str::slug($request->store_name);
+    $store->email = $request->email;
+    $store->phone = $request->phone;
+    $store->description = $request->description;
+    $store->address = $request->address;
+    $store->response_rate = $request->response_rate ?? 0;
+    // $store->date = $request->date;
+
+    // Image upload (same logic as product)
+    if ($request->hasFile('logo')) {
+
+        if ($store->image) {
+            $oldPath = public_path($store->image);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
+        }
+
+        $image = $request->file('logo');
+        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->move(public_path('upload/vendorstore'), $imageName);
+        $store->image = 'upload/vendorstore/' . $imageName;
+    }
+
+    $store->save();
+
+    return response()->json([
+        'message' => 'Vendor store updated successfully',
+        'store' => $store
+    ], 201);
 }
 
 

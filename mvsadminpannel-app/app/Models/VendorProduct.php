@@ -9,6 +9,7 @@ class VendorProduct extends Model
        // Mass assignable fields
     protected $fillable = [
         'vendor_id',
+        'vendor_package_id',
         'category_id',
         'subcategory_id',
         'name',
@@ -30,6 +31,7 @@ class VendorProduct extends Model
     protected $casts = [
         'sizes' => 'array',
         'color' => 'array',
+        'image'=>'array'
     ];
 
     // Relation to Vendor
@@ -42,12 +44,21 @@ class VendorProduct extends Model
         return $this->belongsTo(Category::class);
     }
 
- 
-    public function subcategory()
-{
-    return $this->belongsTo(SubCategory::class, 'subcategory_id'); // correct column name
-}
 
+    public function subcategory()
+    {
+        return $this->belongsTo(SubCategory::class, 'subcategory_id'); // correct column name
+    }
+    public function items(){
+        return $this->hasMany(OrderItem::class,'product_id','id');
+    }
+    public function vendorReview(){
+        return $this->hasMany(VendorReview::class);
+    }
+    public function vendorPackage()
+    {
+        return $this->belongsTo(VendorPackage::class);
+    }
 
     // Optional: Get price after discountC
     // public function getPriceAfterDiscountAttribute() {
